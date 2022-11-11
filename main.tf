@@ -17,6 +17,26 @@ module "bootcamp_vpc" {
   }
 }
 
+data "aws_ami" "amazon_linux" {
+  most_recent = true
+
+  filter {
+    name = "name"
+
+    values = [
+      "amzn-ami-hvm-*-x86_64-gp2",
+    ]
+  }
+
+  filter {
+    name = "owner-alias"
+
+    values = [
+      "amazon",
+    ]
+  }
+}
+
 module "jenkins_sg" {
   source = "terraform-aws-modules/security-group/aws"
 
@@ -59,9 +79,9 @@ module "jenkins_ec2_instance" {
   version = "~> 3.0"
 
   name                   = "Jenkins-Server"
-  ami                    = "ami-08c40ec9ead489470"
+  ami                    = data.aws_ami.amazon_linux.id
   instance_type          = "t2.micro"
-  key_name               = "vockey"
+  key_name               = "terraform"
   monitoring             = true
   vpc_security_group_ids = [module.jenkins_sg.security_group_id]
   subnet_id              = module.bootcamp_vpc.public_subnets[0]
@@ -79,7 +99,7 @@ module "grafana_ec2_instance" {
   name                   = "Grafana-Server"
   ami                    = "ami-08c40ec9ead489470"
   instance_type          = "t2.micro"
-  key_name               = "vockey"
+  key_name               = "terraform"
   monitoring             = true
   vpc_security_group_ids = [module.grafana_sg.security_group_id]
   subnet_id              = module.bootcamp_vpc.public_subnets[0]
@@ -97,7 +117,7 @@ module "osticket_ec2_instance" {
   name                   = "OSticket-Server"
   ami                    = "ami-08c40ec9ead489470"
   instance_type          = "t2.micro"
-  key_name               = "vockey"
+  key_name               = "terraform"
   monitoring             = true
   vpc_security_group_ids = [module.osticket_sg.security_group_id]
   subnet_id              = module.bootcamp_vpc.public_subnets[0]
