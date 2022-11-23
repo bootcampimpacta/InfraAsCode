@@ -55,9 +55,18 @@ module "grafana_sg" {
   name        = "grafana-sg"
   description = "Security group para o servidor do grafana Server"
   vpc_id      = module.bootcamp_vpc.vpc_id
-
+  
   ingress_cidr_blocks = ["0.0.0.0/0"]
   ingress_rules       = ["http-80-tcp", "ssh-tcp"]
+  ingress_with_cidr_blocks = [
+    {
+      from_port   = 3000
+      to_port     = 3000
+      protocol    = "tcp"
+      description = "Grafana Port"
+      cidr_blocks = "0.0.0.0/0"
+    }
+  ]
   egress_rules        = ["all-all"]
 }
 
@@ -85,7 +94,7 @@ module "jenkins_ec2_instance" {
   monitoring             = true
   vpc_security_group_ids = [module.jenkins_sg.security_group_id]
   subnet_id              = module.bootcamp_vpc.public_subnets[0]
-  user_data              = file("./Jenkins.sh")
+  user_data              = file("./jenkins.sh")
 
   tags = {
     Terraform = "true"
@@ -103,7 +112,7 @@ module "grafana_ec2_instance" {
   monitoring             = true
   vpc_security_group_ids = [module.grafana_sg.security_group_id]
   subnet_id              = module.bootcamp_vpc.public_subnets[0]
-  user_data              = file("./Grafana.sh")
+  user_data              = file("./grafana.sh")
 
   tags = {
     Terraform = "true"

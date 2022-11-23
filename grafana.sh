@@ -1,13 +1,14 @@
 #!/bin/bash
 
-sudo yum update -y
-sudo yum install yum-utils -y
+sudo apt-get install -y apt-transport-https
+sudo apt-get install -y software-properties-common wget
 
-sudo yum install docker -y
-sudo usermod -aG docker ec2-user
+sudo wget -q -O /usr/share/keyrings/grafana.key https://packages.grafana.com/gpg.key
+echo "deb [signed-by=/usr/share/keyrings/grafana.key] https://packages.grafana.com/oss/deb stable main" | sudo tee -a /etc/apt/sources.list.d/grafana.list
 
-sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
+sudo apt-get update
+sudo apt-get install grafana -y
 
-sudo chkconfig docker on
-sudo service docker start
+sudo systemctl start grafana-server
+sudo systemctl enable grafana-server.service
+sudo systemctl status grafana-server
