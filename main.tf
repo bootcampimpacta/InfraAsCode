@@ -17,6 +17,26 @@ module "bootcamp_vpc" {
   }
 }
 
+data "aws_ami" "amazon_linux" {
+  most_recent = true
+
+  filter {
+    name = "name"
+
+    values = [
+      "amzn-ami-hvm-*-x86_64-gp2",
+    ]
+  }
+
+  filter {
+    name = "owner-alias"
+
+    values = [
+      "amazon",
+    ]
+  }
+}
+
 module "jenkins_sg" {
   source = "terraform-aws-modules/security-group/aws"
 
@@ -35,9 +55,18 @@ module "grafana_sg" {
   name        = "grafana-sg"
   description = "Security group para o servidor do grafana Server"
   vpc_id      = module.bootcamp_vpc.vpc_id
-
+  
   ingress_cidr_blocks = ["0.0.0.0/0"]
   ingress_rules       = ["http-80-tcp", "ssh-tcp"]
+  ingress_with_cidr_blocks = [
+    {
+      from_port   = 3000
+      to_port     = 3000
+      protocol    = "tcp"
+      description = "Grafana Port"
+      cidr_blocks = "0.0.0.0/0"
+    }
+  ]
   egress_rules        = ["all-all"]
 }
 
@@ -59,13 +88,13 @@ module "jenkins_ec2_instance" {
   version = "~> 3.0"
 
   name                   = "Jenkins-Server"
-  ami                    = "ami-08c40ec9ead489470"
+  ami                    = data.aws_ami.amazon_linux.id
   instance_type          = "t2.micro"
-  key_name               = "vockey"
+  key_name               = "terraform"
   monitoring             = true
   vpc_security_group_ids = [module.jenkins_sg.security_group_id]
   subnet_id              = module.bootcamp_vpc.public_subnets[0]
-  user_data              = file("./Jenkins.sh")
+  user_data              = file("./jenkins.sh")
 
   tags = {
     Terraform = "true"
@@ -79,11 +108,11 @@ module "grafana_ec2_instance" {
   name                   = "Grafana-Server"
   ami                    = "ami-08c40ec9ead489470"
   instance_type          = "t2.micro"
-  key_name               = "vockey"
+  key_name               = "terraform"
   monitoring             = true
   vpc_security_group_ids = [module.grafana_sg.security_group_id]
   subnet_id              = module.bootcamp_vpc.public_subnets[0]
-  user_data              = file("./Grafana.sh")
+  user_data              = file("./grafana.sh")
 
   tags = {
     Terraform = "true"
@@ -97,7 +126,7 @@ module "osticket_ec2_instance" {
   name                   = "OSticket-Server"
   ami                    = "ami-08c40ec9ead489470"
   instance_type          = "t2.micro"
-  key_name               = "vockey"
+  key_name               = "terraform"
   monitoring             = true
   vpc_security_group_ids = [module.osticket_sg.security_group_id]
   subnet_id              = module.bootcamp_vpc.public_subnets[0]

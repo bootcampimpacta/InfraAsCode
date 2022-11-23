@@ -11,3 +11,16 @@ sudo chmod +x /usr/local/bin/docker-compose
 
 sudo chkconfig docker on
 sudo service docker start
+
+sudo yum install git -y
+
+
+sudo git clone https://github.com/bootcampimpacta/Jenkins.git /usr/tmp/
+
+cd /usr/tmp/
+
+docker build -t jenkins-server-image .
+docker run -d -p 80:8080 --name jenkins-pod jenkins-server-image
+
+docker exec -ti jenkins-pod cat /var/jenkins_home/secrets/initialAdminPassword
+
