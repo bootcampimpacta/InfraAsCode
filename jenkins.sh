@@ -22,5 +22,5 @@ cd /usr/tmp/
 docker build -t jenkins-server-image .
 docker run -d -p 80:8080 --name jenkins-pod jenkins-server-image
 
-docker exec -ti jenkins-pod cat /var/jenkins_home/secrets/initialAdminPassword
+echo docker exec -ti jenkins-pod cat /var/jenkins_home/secrets/initialAdminPassword
 

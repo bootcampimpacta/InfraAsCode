@@ -37,6 +37,7 @@ data "aws_ami" "amazon_linux" {
   }
 }
 
+/*
 module "jenkins_sg" {
   source = "terraform-aws-modules/security-group/aws"
 
@@ -69,7 +70,7 @@ module "grafana_sg" {
   ]
   egress_rules        = ["all-all"]
 }
-
+*/
 module "osticket_sg" {
   source = "terraform-aws-modules/security-group/aws"
 
@@ -79,10 +80,18 @@ module "osticket_sg" {
 
   ingress_cidr_blocks = ["0.0.0.0/0"]
   ingress_rules       = ["http-80-tcp", "ssh-tcp"]
+  ingress_with_cidr_blocks = [
+    {
+      from_port   = 8080
+      to_port     = 8080
+      protocol    = "tcp"
+      description = "OsTicket Port"
+      cidr_blocks = "0.0.0.0/0"
+    }
+  ]
   egress_rules        = ["all-all"]
 }
-
-
+/*
 module "jenkins_ec2_instance" {
   source  = "terraform-aws-modules/ec2-instance/aws"
   version = "~> 3.0"
@@ -118,7 +127,7 @@ module "grafana_ec2_instance" {
     Terraform = "true"
   }
 }
-
+*/
 module "osticket_ec2_instance" {
   source  = "terraform-aws-modules/ec2-instance/aws"
   version = "~> 3.0"
@@ -130,13 +139,13 @@ module "osticket_ec2_instance" {
   monitoring             = true
   vpc_security_group_ids = [module.osticket_sg.security_group_id]
   subnet_id              = module.bootcamp_vpc.public_subnets[0]
-  user_data              = file("./osTicket.sh")
+  user_data              = file("./osticket.sh")
 
   tags = {
     Terraform = "true"
   }
 }
-
+/*
 resource "aws_eip" "jenkins-ip" {
   instance = module.jenkins_ec2_instance.id
   vpc      = true
@@ -146,7 +155,7 @@ resource "aws_eip" "grafana-ip" {
   instance = module.grafana_ec2_instance.id
   vpc      = true
 }
-
+*/
 resource "aws_eip" "osticket-ip" {
   instance = module.osticket_ec2_instance.id
   vpc      = true
