@@ -18,4 +18,3 @@ module "bootcamp_vpc" {
     Professor = "Pablo"
   }
 }
-
