@@ -44,7 +44,7 @@
 
  O resultado deve ser similar a imagem abaixo
 
- !(https://drive.google.com/file/d/1vbQ8uniVHMMCQzB0HW0OOpEkjGnBVccK/view?usp=share_link)
+ ![imagem1](https://drive.google.com/file/d/1vbQ8uniVHMMCQzB0HW0OOpEkjGnBVccK/view?usp=share_link)
 
  Abra um terminal e execute o comando **terraform init**, espere ele finalizar as configurações e depois digite **terraform apply -auto-approve**.
  Espere ele finalizar a criação da infraestrutura para seguir para proxima etapa.
