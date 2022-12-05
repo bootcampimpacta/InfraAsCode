@@ -1,5 +1,5 @@
 # InfraAsCode Bootcamp
- Repositório para Armazenar a infraestrutura Como Código do Bootcamp de Fabiano e Diego.
+ Repositório para Armazenar a **Infraestrutura Como Código** do Bootcamp de Fabiano e Diego.
 
 ## Iniciando a Infraestrutura
 
@@ -69,6 +69,37 @@
 
  Abra um terminal e execute o comando **terraform init**, espere ele finalizar as configurações e depois digite **terraform apply -auto-approve**.
  Espere ele finalizar a criação da infraestrutura para seguir para proxima etapa.
+
+ Perceba que no final do processo o terminal irá exibir a URL de acesso do Jenkins que configuramos para facilitar o acesso, não necessitando acessar a AWS para descobrir o IP publico que foi gerado na criação da EC2
+
+ !(img3)
+
+ Depois de uns 5 minutos, precisamos acessar o servidor do Jenkins pra fazer 2 atividas:
+ - Pegar a senha incial para configurar o Jenkins
+ - Configurar as credenciaos aws no servidor
+
+ ### Pegandoa senha inicial
+
+ Acesse o sevidor utilizando o comando _ssh -i terraform.pem ec2-user@IPdoServidor_ , nao se esqueça de pegar a chave **terraform.pem** que foi fornecida no e-mail.
+
+ Dentro do servidor execute o comando **docker exec -ti jenkins-pod cat /var/jenkins_home/secrets/initialAdminPassword**, esse comando irá trazer a senha para configura o jenkins. Guarde-a pois iremos usa-la logo mais.
+
+### Configurando AWS Credencials no Sevidor Jenkins
+
+ Ainda dentro do servidor execute o comando **docker exec -ti jenkins-pod /bin/bash**, esse comando irá fazer entrar dentro do container onde está o Jenkins, logo após execute o comando  **aws configure**, assim como você configurou a conta da aws localmente alguns passos anteriormente, precisamos fazer a mesma configuração aqui.
+
+  AWS Access Key ID [None]: **informado no email**
+
+  Secret Access Key [None]: **informado no email**
+
+  Default region name [None]: **us-east-1**
+
+  Default output format [None]: json
+
+Assim que finalizar, digite **exit**.
+
+## Configurando Jenkins
+ Agora no Browser navegue para o Jenkins acessando URL **http://IPpublicoServidor/**
 
 
 
