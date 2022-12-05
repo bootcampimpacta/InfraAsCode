@@ -72,6 +72,8 @@
 
  Perceba que no final do processo o terminal irá exibir a URL de acesso do Jenkins que configuramos para facilitar o acesso, não necessitando acessar a AWS para descobrir o IP publico que foi gerado na criação da EC2
 
+ _no exemplo abaixo o server gerou com o IP Publico 54.236.99.154_
+
  !(img3)
 
  Depois de uns 5 minutos, precisamos acessar o servidor do Jenkins pra fazer 2 atividas:
@@ -84,9 +86,13 @@
 
  Dentro do servidor execute o comando **docker exec -ti jenkins-pod cat /var/jenkins_home/secrets/initialAdminPassword**, esse comando irá trazer a senha para configura o jenkins. Guarde-a pois iremos usa-la logo mais.
 
+ !(img4)
+
 ### Configurando AWS Credencials no Sevidor Jenkins
 
  Ainda dentro do servidor execute o comando **docker exec -ti jenkins-pod /bin/bash**, esse comando irá fazer entrar dentro do container onde está o Jenkins, logo após execute o comando  **aws configure**, assim como você configurou a conta da aws localmente alguns passos anteriormente, precisamos fazer a mesma configuração aqui.
+
+ !(img5)
 
   AWS Access Key ID [None]: **informado no email**
 
@@ -99,7 +105,112 @@
 Assim que finalizar, digite **exit**.
 
 ## Configurando Jenkins
- Agora no Browser navegue para o Jenkins acessando URL **http://IPpublicoServidor/**
+ Agora no Browser navegue para o Jenkins acessando URL **http://IPpublicoServidor/** e coloque a senha que pegou no passo anterior e prossiga.
+
+ !(img6)
+ 
+ Install sugested puglins
+
+ !(img7)
+
+ No final da configuração preencha os campos com _bootcamp_ e com email _bootcampimpacta@gmail.com_ e **salve e continue**.
+ 
+ !(img8)
+
+ depois **salve e finish**. E depois **Start and use Jenkins**.
+
+ !(img9)
+
+ Pronto! Finalizamos a configuração do Jenkins agora vamos para a proxima etapa para subir um servidor grafana utilizando um pipeline do Jenkins.
+
+
+ ## Configurando um pipeline para subir a EC2 do Grafana
+
+ Iremos agora configurar uma pipeline no jenkins que recupera um repositório no Github com as configurações da EC2 e aplica na nossa conta AWS, utilize a configuração abaixo na criação do pipeline.
+
+ ```js
+    pipeline {
+        agent any
+        stages {
+            stage('Clone') {
+            steps {
+                git url: 'https://github.com/bootcampimpacta/grafana-server.git', branch: 'main'
+            }
+            }
+
+            stage('TF Init&Plan') {
+            steps {
+                script {
+                sh 'terraform init'
+                sh 'terraform plan -out=myplan.out'
+                }
+            }
+            }
+
+            stage('Approval') {
+            steps {
+                script {
+                def userInput = input(id: 'confirm', message: 'Deseja alterar a Infraestrutura?', description: 'Acao ', name: 'Confirm')
+                }
+            }
+            }
+
+            stage('TF Apply') {
+            steps {
+                sh 'terraform apply myplan.out'
+            }
+            }
+        }
+    }
+ ```
+
+ Clique em **Create a job**
+
+ !(img10)
+
+ De o nome da esteira de **IAC-GrafanaServer** ou outro nome que preferir mas que indique que essa esteira é resposavel pelo servidor do Grafana, selecione **pipeline** e clique em **OK**
+
+ !(img11)
+
+ Role até a parte de baixo e vá em Pipeline e colque o script acima e salve. Pronto temos um pipeline que resgata as informações de um repositorio e publica uma EC2 de grafana usando terraform.
+
+ !(img12)
+
+ Clique e **Build Now** e espere a inicialização da esteira.
+
+ !(img13)
+
+ Nossa pipeline tem um step de aprovação para poder prosseguir, clique em confirm e aguarde.
+
+ !(img14)
+
+ Verifique o sucesso da esteira no ultimo step e solicite para ver os logs, perceba que no final ele indica qual IP publico foi gerado para acessar o grafana, acesse a url indicada.
+
+ _No nosso exemplo a url foi http://3.216.104.230:3000/_
+
+ !(img15)
+
+ Acesse a URL e veja o Grafana. Usuario: **admin** e Senha: **admin**. Ele vai pedir para trocar de senha, use a senha que desejar.
+
+ !(img16)
+
+ Pronto. Temos um servidor Grafana configurado usando IAC.
+
+ !(img17)
+
+## Configurar o Grafana para monitorar dados basicos das nossas EC2
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
