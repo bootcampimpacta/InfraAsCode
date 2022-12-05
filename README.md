@@ -44,7 +44,7 @@
 
  O resultado deve ser similar a imagem abaixo
 
- !(img1.jpg)
+ !(https://drive.google.com/drive/folders/1s1CPykKzsblz92ll1mra88eVtwOL2rXU)
 
  Abra um terminal e execute o comando **terraform init**, espere ele finalizar as configurações e depois digite **terraform apply -auto-approve**.
  Espere ele finalizar a criação da infraestrutura para seguir para proxima etapa.
@@ -109,7 +109,7 @@ Assim que finalizar, digite **exit**.
 
  !(img6)
  
- Install sugested puglins
+ **Install sugested puglins**
 
  !(img7)
 
@@ -117,7 +117,7 @@ Assim que finalizar, digite **exit**.
  
  !(img8)
 
- depois **salve e finish**. E depois **Start and use Jenkins**.
+ depois **salve e finish**. Depois **Start and use Jenkins**.
 
  !(img9)
 
