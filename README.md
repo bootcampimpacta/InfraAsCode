@@ -3,7 +3,7 @@
 
 ## Iniciando a Infraestrutura
 
- Primeiramente resgate os acessos do e-mail que foi enviado com o titulo de "Bootcamp Fabiano e Diego acessos", nesse e-mail irá conter.
+ Primeiramente resgate os acessos do e-mail que foi enviado com o titulo de "Trabalho Bootcamp Fabiano (RA 2201915) e Diego (RA 2200901)", nesse e-mail irá conter.
 
  - ACESS KEY E SECRET KEY AWS
  - USUARIO E SENHA DO GITHUB
