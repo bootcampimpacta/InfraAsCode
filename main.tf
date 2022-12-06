@@ -15,7 +15,7 @@ module "bootcamp_vpc" {
     Environment = "prod"
     Name = "bootcamp-vpc"
     Alunos = "Fabiano e Diego"
-    Professor = "Pablo   "
+    Professor = "Pablo     "
   }
 }
 
