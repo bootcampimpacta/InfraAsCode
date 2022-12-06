@@ -176,11 +176,11 @@ Assim que finalizar, digite **exit**.
 
  !(img12)
 
- Clique e **Build Now** e espere a inicialização da esteira.
+ Clique em **Build Now** e espere a inicialização da esteira.
 
  !(img13)
 
- Nossa pipeline tem um step de aprovação para poder prosseguir, clique em confirm e aguarde.
+ Nossa pipeline tem um step de aprovação para poder prosseguir, clique em Procced e aguarde.
 
  !(img14)
 
@@ -199,6 +199,255 @@ Assim que finalizar, digite **exit**.
  !(img17)
 
 ## Configurar o Grafana para monitorar dados basicos das nossas EC2
+
+ Acesse a parte de configuração do jenkins clicando na engrenagem e depois em data source
+
+ img18
+
+ Clique em **ADD DataSource** e depois procure por **cloudwatch**
+
+ img19
+
+ Selecione **Access & Secret Key**, coloque as senhas que foram passadas por e-mail e selecione a Default Region como **us-east-1**.
+ Depois clique em **Save & test** no final da pagina.
+
+ img20
+
+ Clique na aba **Dashboards** e importe o dashboard **Amazon EC2**.
+
+ img21
+
+ Pronto. Agora basicamente temos um monitoramento de nossas EC2 atuais e de futuras EC2 de nossa cloud AWS.
+
+ Volte para o inicio clicando em **Dashboards** e depois **Browse**
+
+ img22
+
+ Selecione o dashboard **Amazon EC2**
+
+ img23
+
+ Pronto. Minimamente já temos alguns dados.
+
+ img24
+
+## Configurando um pipeline para subir a EC2 do OSTicket
+
+ _OSTicket é uma aplicação opensource de mercado para gestão de chamados. Estamos utilizando nesse bootcamp apenas para demonstrar como é simples subir uma infraestrutura como código e utilizando containers com imagens previamente definidas._
+
+ Para mais informações acesse <https://osticket.com/>
+
+ Vamos retornar ao Jenkins e criar um novo pipeline utilizando o script abaixo apontando para o repositório que contem as configurações para subir a EC2 com o OSTicket.
+
+ ```js
+    pipeline {
+        agent any
+        stages {
+            stage('Clone') {
+            steps {
+                git url: 'https://github.com/bootcampimpacta/osticket-server.git', branch: 'main'
+            }
+            }
+
+            stage('TF Init&Plan') {
+            steps {
+                script {
+                sh 'terraform init'
+                sh 'terraform plan -out=myplan.out'
+                }
+            }
+            }
+
+            stage('Approval') {
+            steps {
+                script {
+                def userInput = input(id: 'confirm', message: 'Deseja alterar a Infraestrutura?', description: 'Acao ', name: 'Confirm')
+                }
+            }
+            }
+
+            stage('TF Apply') {
+            steps {
+                sh 'terraform apply myplan.out'
+            }
+            }
+        }
+    }
+ ```
+
+ Volte ao inicio e clique em novo item.
+
+ img25
+
+ De o nome da esteira de **IAC-OSTicketServer** ou outro nome que preferir mas que indique que essa esteira é resposavel pelo servidor do OSticket, selecione **pipeline** e clique em **OK**
+
+ img26
+
+ Role até a parte de baixo e vá em Pipeline e colque o script acima e salve. Pronto temos um pipeline que resgata as informações de um repositorio e publica uma EC2 de OSticket usando terraform.
+
+ Clique em **Build Now** e espere a inicialização da esteira.
+
+ img27
+
+ Nossa pipeline tem um step de aprovação para poder prosseguir, clique em Procced e aguarde.
+
+ img28
+
+ Verifique o sucesso da esteira no ultimo step e solicite para ver os logs, perceba que no final ele indica qual IP publico foi gerado para acessar o OSTicket, acesse a url indicada.
+
+ _Aguarde uns 10 minutos pois essa configuação de subida é um pouco mais demorada_
+
+ _No nosso exemplo a url foi http://34.199.198.249:8080/scp/_
+
+ img29
+
+ Para acessar basta colocaro usuario: **ostadmin** e senha: **Admin1**
+
+ img30
+
+ 
+ Se voltarmos ao Grafana, podemos perceber que esse novo servidor já está sendo monitorado.
+
+ img31
+
+
+## Bonus - Inciar pipeline quando o repositorio sofrer alteração
+
+ Vamos criar uma outra pipeline para alterar a infra base que criamos no começo desse projeto.
+
+ Vá até o Jenkins e crie um novo pipeline utilizando o script abaixo. Vamos dar o nome de **IAC-Bootcamp**
+
+ ```js
+    pipeline {
+        agent any
+        stages {
+            stage('Clone') {
+            steps {
+                git url: 'https://github.com/bootcampimpacta/InfraAsCode.git', branch: 'main'
+            }
+            }
+
+            stage('TF Init&Plan') {
+            steps {
+                script {
+                sh 'terraform init'
+                sh 'terraform plan -out=myplan.out'
+                }
+            }
+            }
+
+            stage('Approval') {
+            steps {
+                script {
+                def userInput = input(id: 'confirm', message: 'Deseja alterar a Infraestrutura?', description: 'Acao ', name: 'Confirm')
+                }
+            }
+            }
+
+            stage('TF Apply') {
+            steps {
+                sh 'terraform apply myplan.out'
+            }
+            }
+        }
+    }
+ ```
+
+ img32
+
+ Na configuração dessa esteira maque a opção **GitHub hook trigger for GITScm polling**.
+
+ img33
+
+ Selecione **GitHub Projetct** e coloque a URL: https://github.com/bootcampimpacta/InfraAsCode.git/ e salve
+
+ img33-1
+
+ Antes de prosseguirmos, precisamos ir na nossa conta do github que hospeda o nosso repositório e configurar um webhook para o nosso Jenkins, utilize o usuario e senha que foi passado via email.
+
+ URL GitHub: <https://github.com/bootcampimpacta/InfraAsCode>
+
+ Clique em **Settings**
+
+ img34
+
+ Clique em **Webhooks** e depois **Add webhooks**
+
+ img35
+
+ Adicione a url **http://IP-DO-JENKINS/github-webhook/** selecione no Content type **application/json** e depois **Add webhook**
+
+ _No nosso exemplo nossa URL ficou assim http://54.236.99.154/github-webhook/_
+
+ img36
+
+ Aguarde até ficar verde, atualize a pagina se for necessário
+
+ img37
+
+ Pronto. Agora qualquer alteração no nosso repositório _InfraAsCode_ na branch _main_ vai startar a pipeline no jenkins
+
+ Vamos testar.
+
+ Volte a tela inicial e crie uma branch baseada na main.
+
+ vamos criar uma branch chamada _testeAutomacao_
+
+ Na branhc vamos alterar o arquivo main.tf diretamente na console para poder exemplificar.
+
+ img38
+
+ Clique no lapis para editar. Vamos adicionar uma nova tag para testar a automação.
+
+ Adicione a Tag **Professor** com o valor **Pablo**
+
+ Dalve e adicione o comentario de _teste de automação_ e clique **Commit Changes**
+
+ img39
+
+ Volte para a tela inicial e crie um **Pull Request**
+
+ img40
+
+ Depois **Create Pull Request**
+
+ img 41
+
+ Espere até o merge automatico finalizar e depois clique em **Merge Pull Request**. Estamos oficializando na branch main a alteração que fizemos na branch testeAutomacao
+
+ img42
+
+ **Confirm Merge**
+
+ img43
+
+ Volte para o Jenkins e perceba que a esteira inicou automaticamente
+
+ img44
+
+ Clique em proced e deixa a estaira finalizar.
+
+ Uma nova tag foi adicionada aos nossos recursos de rede.
+
+ img45
+
+
+ ## Considerações Finais
+
+ No nosso bootcamp utilizamos o conceito de infraestrutura como código, containers com dockerfile customizados, imagens prontas da Docker Hub, Git para versionamentos dos nossos metadadose e o Grafana para fazer o monitoramento dos nossos recusos na nuvem, além de subir um servidor com uma aplicação open source para gerenciamento de chamados.
+
+ Alunos Diego Alves dos Santos e Fabiano Vidal Rocha
+ 
+ Turma 08 Cloud e Devops
+
+
+
+
+
+
+
+
+
 
 
 
